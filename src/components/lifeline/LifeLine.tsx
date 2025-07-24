@@ -1,5 +1,5 @@
 import { ResponsiveLine } from "@nivo/line";
-import type { LifeEvent } from "../views/HomePage";
+import type { LifeEvent } from "../../views/home/HomePage";
 
 export const LifeLine = ({ data }: { data: LifeEvent[] }) => {
   return (

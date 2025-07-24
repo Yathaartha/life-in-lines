@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FormWrapper, HomePageBackground } from "./HomePage.css";
-import { LifeLine } from "../components/LifeLine";
+import { LifeLine } from "../../components/lifeline/LifeLine";
 import { Form } from "./HomePage.css";
 
 export type LifeEvent = {
