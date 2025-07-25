@@ -5,8 +5,9 @@ import { Form } from "./HomePage.css";
 
 export type LifeEvent = {
   // id: string;
-  x: number;
+  x: Date;
   y: number;
+  name: string;
 };
 
 const lifeEvents: LifeEvent[] = [];
@@ -15,10 +16,11 @@ export const HomePage = () => {
   const [eventTitle, setEventTitle] = useState("");
   const [eventType, setEventType] = useState("positive");
   const [eventValue, setEventValue] = useState(0);
+  const [eventDate, setEventDate] = useState<Date>(new Date());
 
   return (
     <HomePageBackground
-      bgColor={`${eventType === "positive" ? "#ff0000" : "#00c936"}`}
+      bgColor={`${eventType === "positive" ? "#00c936" : "#ff0000"}`}
       bgOpacity={eventValue / 100}>
       <FormWrapper>
         {/* <h1>Welcome to Life in Lines</h1> */}
@@ -27,9 +29,11 @@ export const HomePage = () => {
           onSubmit={(e) => {
             e.preventDefault();
             lifeEvents.push({
-              x: lifeEvents.length,
+              // format date to match YYYY-MM-DD
+              x: eventDate,
               // id: eventTitle,
               y: eventValue * (eventType === "positive" ? 1 : -1),
+              name: eventTitle,
             });
             setEventTitle("");
             setEventType("positive");
@@ -39,6 +43,18 @@ export const HomePage = () => {
             type="text"
             value={eventTitle}
             onChange={(e) => setEventTitle(e.target.value)}
+          />
+
+          <label htmlFor="eventDate">Event Date:</label>
+          <input
+            type="date"
+            required
+            id="eventDate"
+            value={eventDate.toISOString().split("T")[0]}
+            onChange={(e) => {
+              const date = new Date(e.target.value);
+              setEventDate(date);
+            }}
           />
           <label htmlFor="positive">Positive</label>
           <input

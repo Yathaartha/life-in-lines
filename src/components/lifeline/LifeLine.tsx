@@ -2,13 +2,17 @@ import { ResponsiveLine } from "@nivo/line";
 import type { LifeEvent } from "../../views/home/HomePage";
 
 export const LifeLine = ({ data }: { data: LifeEvent[] }) => {
+  const sortedData = [...data].sort(
+    (a, b) => new Date(a.x).getTime() - new Date(b.x).getTime()
+  );
+
   return (
     <ResponsiveLine /* or Line for fixed dimensions */
       curve="monotoneX"
       data={[
         {
           id: "life Events",
-          data: data,
+          data: sortedData,
         },
       ]}
       margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
@@ -19,15 +23,11 @@ export const LifeLine = ({ data }: { data: LifeEvent[] }) => {
         stacked: true,
         reverse: false,
       }}
-      xScale={{
-        type: "linear",
-        min: 0,
-        max: data.length - 1,
-        stacked: true,
-        reverse: false,
-      }}
-      axisBottom={{ legend: "transportation", legendOffset: 36 }}
-      axisLeft={{ legend: "count", legendOffset: -40 }}
+      xScale={{ type: "time", format: "%Y-%m-%d", precision: "day" }}
+      axisBottom={{ format: "%b %d %Y", tickValues: "every 1 month" }}
+      axisLeft={{ legend: "Value", legendOffset: -40 }}
+      enableArea={true}
+      colors={["#00c936", "#ff0000"]}
       pointSize={10}
       pointColor={{ theme: "background" }}
       pointBorderWidth={2}
@@ -48,4 +48,3 @@ export const LifeLine = ({ data }: { data: LifeEvent[] }) => {
     />
   );
 };
-
