@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FormWrapper, HomePageBackground } from "./HomePage.css";
-import { LifeLine } from "../../components/lifeline/LifeLine";
+import LifeLine from "../../components/lifeline/LifeLine";
 import { Form } from "./HomePage.css";
 
 export type LifeEvent = {
@@ -85,8 +85,18 @@ export const HomePage = () => {
         </Form>
       </FormWrapper>
 
-      <LifeLine data={lifeEvents} />
+      <LifeLine
+        data={[
+          { x: new Date("2025-07-20"), y: 25 },
+          { x: new Date("2025-07-21"), y: 60 },
+          { x: new Date("2025-07-22"), y: -40 },
+          { x: new Date("2025-07-23"), y: -85 },
+          { x: new Date("2025-07-24"), y: -10 },
+          { x: new Date("2025-07-25"), y: 95 },
+        ]}
+        width={800}
+        height={400}
+      />
     </HomePageBackground>
   );
 };
-
