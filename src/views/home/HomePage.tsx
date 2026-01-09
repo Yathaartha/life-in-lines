@@ -94,8 +94,8 @@ export const HomePage = () => {
           { x: new Date("2025-07-24"), y: -10 },
           { x: new Date("2025-07-25"), y: 95 },
         ]}
-        width={800}
-        height={400}
+        width={"100dvw"}
+        height={"100dvh"}
       />
     </HomePageBackground>
   );

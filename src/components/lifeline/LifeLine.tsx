@@ -1,5 +1,14 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
+import {
+  autoUpdate,
+  flip,
+  offset,
+  shift,
+  useFloating,
+  useHover,
+  useInteractions,
+} from "@floating-ui/react";
 
 // --- TYPE DEFINITIONS ---
 interface DataPoint {
@@ -9,15 +18,13 @@ interface DataPoint {
 
 interface AreaChartProps {
   data: DataPoint[];
-  width?: number;
-  height?: number;
+  width?: number | string;
+  height?: number | string;
 }
 
 interface TooltipData {
-  x: number;
-  y: number;
-  visible: boolean;
   dataPoint: DataPoint | null;
+  id: number | null;
 }
 
 // --- HELPER COMPONENTS FOR AXES ---
@@ -57,16 +64,32 @@ const AreaChart: React.FC<AreaChartProps> = ({
   width = 700,
   height = 400,
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const { refs, floatingStyles, context, update } = useFloating({
+    placement: "top",
+    middleware: [offset(8), flip(), shift()],
+    whileElementsMounted: autoUpdate,
+  });
+
+  const hover = useHover(context);
+
+  const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
+
   const [tooltip, setTooltip] = useState<TooltipData>({
-    visible: false,
-    x: 0,
-    y: 0,
     dataPoint: null,
+    id: null,
   });
 
   const margin = { top: 20, right: 30, bottom: 30, left: 40 };
-  const innerWidth = width - margin.left - margin.right;
-  const innerHeight = height - margin.top - margin.bottom;
+  const innerWidth =
+    typeof width === "number"
+      ? width - margin.left - margin.right
+      : (window.visualViewport?.width ?? 800) - margin.left - margin.right;
+  const innerHeight =
+    typeof height === "number"
+      ? height - margin.top - margin.bottom
+      : (window.visualViewport?.height ?? 600) - margin.top - margin.bottom;
 
   // --- D3 SCALES & GENERATORS ---
   const xScale = useMemo(
@@ -113,89 +136,101 @@ const AreaChart: React.FC<AreaChartProps> = ({
   // The 'areaAboveGenerator' and 'areaBelowGenerator' logic from before is functionally identical.
 
   return (
-    <div style={{ position: "relative", width, height }}>
-      <svg width={width} height={height} style={{ position: "absolute" }}>
-        <defs>
-          <clipPath id="clip-above">
-            <rect x="0" y="0" width={innerWidth} height={yScale(0)} />
-          </clipPath>
-          <clipPath id="clip-below">
-            <rect
-              x="0"
-              y={yScale(0)}
-              width={innerWidth}
-              height={innerHeight - yScale(0)}
+    <>
+      <div style={{ position: "relative", width, height, overflowX: "auto" }}>
+        <svg width={width} height={height} style={{ position: "absolute" }}>
+          <defs>
+            <clipPath id="clip-above">
+              <rect x="0" y="0" width={innerWidth} height={yScale(0)} />
+            </clipPath>
+            <clipPath id="clip-below">
+              <rect
+                x="0"
+                y={yScale(0)}
+                width={innerWidth}
+                height={innerHeight - yScale(0)}
+              />
+            </clipPath>
+          </defs>
+          <g transform={`translate(${margin.left}, ${margin.top})`}>
+            {/* ✅ RENDER AXES */}
+            <AxisBottom
+              scale={xScale}
+              transform={`translate(0, ${innerHeight})`}
             />
-          </clipPath>
-        </defs>
-        <g transform={`translate(${margin.left}, ${margin.top})`}>
-          {/* ✅ RENDER AXES */}
-          <AxisBottom
-            scale={xScale}
-            transform={`translate(0, ${innerHeight})`}
-          />
-          <AxisLeft scale={yScale} />
+            <AxisLeft scale={yScale} />
 
-          {/* Areas and Line */}
-          <path
-            d={areaGenerator(data) || ""}
-            fill="lightgreen"
-            clipPath="url(#clip-above)"
-          />
-          <path
-            d={areaGenerator(data) || ""}
-            fill="salmon"
-            clipPath="url(#clip-below)"
-          />
-          <path
-            d={lineGenerator(data) || ""}
-            fill="none"
-            stroke="black"
-            strokeWidth="2"
-          />
-
-          {/* Data Point Dots */}
-          {data.map((d, i) => (
-            <circle
-              key={i}
-              cx={xScale(d.x)}
-              cy={yScale(d.y)}
-              r={5}
-              fill={d.y >= 0 ? "lightgreen" : "salmon"}
+            {/* Areas and Line */}
+            <path
+              d={areaGenerator(data) || ""}
+              fill="lightgreen"
+              clipPath="url(#clip-above)"
+            />
+            <path
+              d={areaGenerator(data) || ""}
+              fill="salmon"
+              clipPath="url(#clip-below)"
+            />
+            <path
+              d={lineGenerator(data) || ""}
+              fill="none"
               stroke="black"
-              strokeWidth="1.5"
-              style={{ cursor: "pointer" }}
-              onMouseOver={() =>
-                setTooltip({
-                  visible: true,
-                  x: xScale(d.x) + margin.left,
-                  y: yScale(d.y) + margin.top,
-                  dataPoint: d,
-                })
-              }
-              onMouseOut={() =>
-                setTooltip((prev) => ({ ...prev, visible: false }))
-              }
+              strokeWidth="2"
             />
-          ))}
-        </g>
-      </svg>
 
+            {/* Data Point Dots */}
+            {data.map((d, i) => (
+              <circle
+                key={i}
+                cx={xScale(d.x)}
+                cy={yScale(d.y)}
+                r={5}
+                fill={d.y >= 0 ? "lightgreen" : "salmon"}
+                stroke="black"
+                strokeWidth="1.5"
+                style={{ cursor: "pointer" }}
+                ref={(node) => {
+                  if (node && tooltip?.id === i) {
+                    refs.setReference(node);
+                    update();
+                  }
+                }}
+                // {...getReferenceProps({
+                //   onFocus: () => {
+                //     setTooltip({
+                //       dataPoint: d,
+                //       id: i,
+                //     });
+                //   },
+                // })}
+                onMouseEnter={(e) => {
+                  refs.setReference(e.currentTarget);
+                  setTooltip({ dataPoint: d, id: i });
+                }}
+                onMouseLeave={() => setTooltip({ dataPoint: null, id: null })}
+              />
+            ))}
+          </g>
+        </svg>
+      </div>
       {/* Tooltip Element */}
-      {tooltip.visible && tooltip.dataPoint && (
+      {tooltip.dataPoint && (
         <div
+          ref={refs.setFloating}
+          {...getFloatingProps({})}
           style={{
-            position: "absolute",
-            pointerEvents: "none",
-            left: tooltip.x,
-            top: tooltip.y,
+            ...floatingStyles,
+            zIndex: 100,
+            background: "black",
+            color: "white",
+            padding: 10,
           }}>
-          <strong>Date:</strong> {tooltip.dataPoint.x.toLocaleDateString()}
+          <strong>Date:</strong> {tooltip.dataPoint.x.toDateString()}
           <br />
-          <strong>Value:</strong> {tooltip.dataPoint.y.toFixed(2)}
+          <strong>Value:</strong> {tooltip.dataPoint.y}
         </div>
       )}
-    </div>
+    </>
   );
 };
 

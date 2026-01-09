@@ -2,11 +2,12 @@ import styled from "styled-components";
 
 export const PageWrapper = styled.div`
   background-color: #34c5f1ff;
-  height: 100vh;
-  width: 100vw;
+  height: 100dvh;
+  /* width: 100vw; */
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
 `;
 
 export const FormContainer = styled.div`
@@ -14,6 +15,8 @@ export const FormContainer = styled.div`
   padding: 2rem;
   border: 2px solid #333333;
   border-radius: 10px;
+  height: 50%;
+  margin: auto;
 `;
 
 export const Title = styled.h2`
