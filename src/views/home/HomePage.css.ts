@@ -28,13 +28,20 @@ export const InputWrapper = styled.div`
 export const InputLabel = styled.label`
   font-weight: bold;
   margin-bottom: 0.5rem;
+  color: var(--text-color);
 `;
 
 export const FormInput = styled.input`
   padding: 0.5rem;
   border-radius: 5px;
-  border: 1px solid #cccccc;
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-color);
   font-size: 1rem;
+  &:focus {
+    outline: none;
+    border-color: #34c5f1ff;
+  }
 `;
 
 export const SubmitButton = styled.button`

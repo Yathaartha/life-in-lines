@@ -35,9 +35,11 @@ interface ZoomState {
 const AxisBottom = ({
   scale,
   transform,
+  themeKey,
 }: {
   scale: d3.ScaleTime<number, number>;
   transform: string;
+  themeKey?: number;
 }) => {
   const ref = useRef<SVGGElement>(null);
 
@@ -76,6 +78,13 @@ const AxisBottom = ({
       // Remove duplicate labels
       d3.select(ref.current).call(axis);
 
+      // Set text color based on CSS variable
+      const textColor =
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--text-color")
+          .trim() || "#111827";
+      d3.select(ref.current).selectAll("text").style("fill", textColor);
+
       // Filter out duplicate labels after rendering
       const ticks = d3.select(ref.current).selectAll(".tick");
       let lastLabel = "";
@@ -89,12 +98,18 @@ const AxisBottom = ({
         }
       });
     }
-  }, [scale]);
+  }, [scale, themeKey]);
 
   return <g ref={ref} transform={transform} />;
 };
 
-const AxisLeft = ({ scale }: { scale: d3.ScaleLinear<number, number> }) => {
+const AxisLeft = ({
+  scale,
+  themeKey,
+}: {
+  scale: d3.ScaleLinear<number, number>;
+  themeKey?: number;
+}) => {
   const ref = useRef<SVGGElement>(null);
 
   useEffect(() => {
@@ -105,6 +120,13 @@ const AxisLeft = ({ scale }: { scale: d3.ScaleLinear<number, number> }) => {
 
       // Hide the domain line (vertical axis line)
       d3.select(ref.current).select(".domain").style("display", "none");
+
+      // Set text color based on CSS variable
+      const textColor =
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--text-color")
+          .trim() || "#111827";
+      d3.select(ref.current).selectAll("text").style("fill", textColor);
 
       // Align text properly with tick marks
       // Use the same y position as the tick marks by reading the transform
@@ -125,7 +147,7 @@ const AxisLeft = ({ scale }: { scale: d3.ScaleLinear<number, number> }) => {
           }
         });
     }
-  }, [scale]);
+  }, [scale, themeKey]);
 
   return <g ref={ref} />;
 };
@@ -151,6 +173,9 @@ const AreaChart: React.FC<AreaChartProps> = ({
     id: null,
   });
   const [hoveredDot, setHoveredDot] = useState<number | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
 
   const svgRef = useRef<SVGSVGElement>(null);
   const zoomContainerRef = useRef<SVGGElement>(null);
@@ -344,6 +369,17 @@ const AreaChart: React.FC<AreaChartProps> = ({
     };
   }, [maxZoom]);
 
+  // Listen for theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
   // Note: For simplicity, a single area generator is used with clipping.
   // The 'areaAboveGenerator' and 'areaBelowGenerator' logic from before is functionally identical.
 
@@ -422,8 +458,9 @@ const AreaChart: React.FC<AreaChartProps> = ({
             <AxisBottom
               scale={xScale}
               transform={`translate(0, ${innerHeight})`}
+              themeKey={isDarkMode ? 1 : 0}
             />
-            <AxisLeft scale={yScale} />
+            <AxisLeft scale={yScale} themeKey={isDarkMode ? 1 : 0} />
 
             {/* Vertical grid lines - one per day */}
             <g opacity="0.3">
@@ -529,8 +566,6 @@ const AreaChart: React.FC<AreaChartProps> = ({
           style={{
             ...floatingStyles,
             zIndex: 100,
-            background: "white",
-            // color: "white",
           }}>
           <EventModalHeader>{tooltip.dataPoint.name}</EventModalHeader>
           <EventContent>

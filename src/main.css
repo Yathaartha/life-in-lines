@@ -1,3 +1,31 @@
+:root {
+  --bg-color: #f9fafb;
+  --text-color: #111827;
+  --text-secondary: #666666;
+  --border-color: #cccccc;
+  --modal-bg: #ffffff;
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --input-bg: #ffffff;
+  --input-border: #cccccc;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-strong: rgba(0, 0, 0, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #111827;
+    --text-color: #f9fafb;
+    --text-secondary: #d1d5db;
+    --border-color: #374151;
+    --modal-bg: #1f2937;
+    --modal-overlay: rgba(0, 0, 0, 0.7);
+    --input-bg: #374151;
+    --input-border: #4b5563;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --shadow-strong: rgba(0, 0, 0, 0.5);
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -8,6 +36,8 @@
 body {
   font-family: Roboto, sans-serif;
   overflow: hidden;
-  background-color: #f9fafb;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
