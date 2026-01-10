@@ -2,20 +2,10 @@ import * as d3 from "d3";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import {
-  autoUpdate,
-  flip,
-  offset,
-  shift,
-  useFloating,
-  useHover,
-  useInteractions,
+    autoUpdate, flip, offset, shift, useFloating, useHover, useInteractions
 } from "@floating-ui/react";
-import {
-  EventContent,
-  EventFooter,
-  EventModalHeader,
-  EventModalWrapper,
-} from "./LifeLine.css";
+
+import { EventContent, EventFooter, EventModalHeader, EventModalWrapper } from "./LifeLine.css";
 
 // --- TYPE DEFINITIONS ---
 interface DataPoint {
@@ -113,6 +103,9 @@ const AxisLeft = ({ scale }: { scale: d3.ScaleLinear<number, number> }) => {
 
       d3.select(ref.current).call(axis);
 
+      // Hide the domain line (vertical axis line)
+      d3.select(ref.current).select(".domain").style("display", "none");
+
       // Align text properly with tick marks
       // Use the same y position as the tick marks by reading the transform
       d3.select(ref.current)
@@ -157,6 +150,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
     dataPoint: null,
     id: null,
   });
+  const [hoveredDot, setHoveredDot] = useState<number | null>(null);
 
   const svgRef = useRef<SVGSVGElement>(null);
   const zoomContainerRef = useRef<SVGGElement>(null);
@@ -169,7 +163,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
       : (window.visualViewport?.height ?? 600) -
         margin.top -
         margin.bottom -
-        80;
+        90;
 
   // Calculate viewport width (the visible area)
   const viewportWidth =
@@ -267,14 +261,14 @@ const AreaChart: React.FC<AreaChartProps> = ({
     [innerHeight]
   );
 
-  // Path generators remain the same, but now use the new scales
+  // Path generators - using Catmull-Rom for smooth curves that pass through data points
   const lineGenerator = useMemo(
     () =>
       d3
         .line<DataPoint>()
         .x((d) => xScale(d.x))
         .y((d) => yScale(d.y))
-        .curve(d3.curveNatural),
+        .curve(d3.curveCatmullRom.alpha(0.5)),
     [xScale, yScale]
   );
   const areaGenerator = useMemo(
@@ -284,9 +278,44 @@ const AreaChart: React.FC<AreaChartProps> = ({
         .x((d) => xScale(d.x))
         .y0(yScale(0))
         .y1((d) => yScale(d.y))
-        .curve(d3.curveNatural),
+        .curve(d3.curveCatmullRom.alpha(0.5)),
     [xScale, yScale]
   );
+
+  // Generate vertical grid lines (one per day)
+  const verticalGridLines = useMemo(() => {
+    const domain = xScale.domain();
+    const startDate = new Date(domain[0]);
+    const endDate = new Date(domain[1]);
+    const lines: { x: number; date: Date }[] = [];
+
+    // Start from midnight of the start date
+    const currentDate = new Date(startDate);
+    currentDate.setHours(0, 0, 0, 0);
+
+    while (currentDate <= endDate) {
+      const x = xScale(currentDate);
+      if (x >= 0 && x <= innerWidth) {
+        lines.push({ x, date: new Date(currentDate) });
+      }
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return lines;
+  }, [xScale, innerWidth]);
+
+  // Generate horizontal grid lines (every 2 units, excluding 0)
+  const horizontalGridLines = useMemo(() => {
+    const lines: number[] = [];
+    for (let y = -10; y <= 10; y += 2) {
+      if (y !== 0) {
+        // Skip 0 as it's the solid ground line
+        lines.push(y);
+      }
+    }
+    return lines;
+  }, []);
 
   // Setup zoom and pan behavior (timeline style)
   useEffect(() => {
@@ -363,6 +392,28 @@ const AreaChart: React.FC<AreaChartProps> = ({
                 height={innerHeight - yScale(0)}
               />
             </clipPath>
+            {/* Gradient for positive area (above zero) - lighter at zero line, darker at top */}
+            <linearGradient
+              id="gradient-above"
+              gradientUnits="objectBoundingBox"
+              x1="0%"
+              y1="100%"
+              x2="0%"
+              y2="0%">
+              <stop offset="0%" stopColor="#10B981" stopOpacity="0.1" />
+              <stop offset="100%" stopColor="#059669" stopOpacity="1" />
+            </linearGradient>
+            {/* Gradient for negative area (below zero) - lighter at zero line, darker at bottom */}
+            <linearGradient
+              id="gradient-below"
+              gradientUnits="objectBoundingBox"
+              x1="0%"
+              y1="0%"
+              x2="0%"
+              y2="100%">
+              <stop offset="0%" stopColor="#F43F5E" stopOpacity="0.1" />
+              <stop offset="100%" stopColor="#BE123C" stopOpacity="1" />
+            </linearGradient>
           </defs>
           <g
             ref={zoomContainerRef}
@@ -374,21 +425,61 @@ const AreaChart: React.FC<AreaChartProps> = ({
             />
             <AxisLeft scale={yScale} />
 
+            {/* Vertical grid lines - one per day */}
+            <g opacity="0.3">
+              {verticalGridLines.map((line, i) => (
+                <line
+                  key={`v-grid-${i}`}
+                  x1={line.x}
+                  y1="0"
+                  x2={line.x}
+                  y2={innerHeight}
+                  stroke="#D1D5DB"
+                  strokeWidth="1"
+                />
+              ))}
+            </g>
+
+            {/* Horizontal grid lines - every 2 units */}
+            <g opacity="0.2">
+              {horizontalGridLines.map((y, i) => (
+                <line
+                  key={`h-grid-${i}`}
+                  x1="0"
+                  y1={yScale(y)}
+                  x2={innerWidth}
+                  y2={yScale(y)}
+                  stroke="#D1D5DB"
+                  strokeWidth="1"
+                />
+              ))}
+            </g>
+
+            {/* Zero line - solid ground line (darker grey) */}
+            <line
+              x1="0"
+              y1={yScale(0)}
+              x2={innerWidth}
+              y2={yScale(0)}
+              stroke="#9CA3AF"
+              strokeWidth="1.5"
+            />
+
             {/* Areas and Line */}
             <path
               d={areaGenerator(normalizedData) || ""}
-              fill="lightgreen"
+              fill="url(#gradient-above)"
               clipPath="url(#clip-above)"
             />
             <path
               d={areaGenerator(normalizedData) || ""}
-              fill="salmon"
+              fill="url(#gradient-below)"
               clipPath="url(#clip-below)"
             />
             <path
               d={lineGenerator(normalizedData) || ""}
               fill="none"
-              stroke="black"
+              stroke="grey"
               strokeWidth="2"
               clipPath="url(#clip-chart)"
             />
@@ -400,11 +491,15 @@ const AreaChart: React.FC<AreaChartProps> = ({
                   key={i}
                   cx={xScale(d.x)}
                   cy={yScale(d.y)}
-                  r={5}
-                  fill={d.y >= 0 ? "lightgreen" : "salmon"}
-                  stroke="black"
+                  r={hoveredDot === i ? 6.5 : 5}
+                  fill="#ffffff"
+                  stroke={d.y >= 0 ? "#10B981" : "#F43F5E"}
                   strokeWidth="1.5"
-                  style={{ cursor: "pointer" }}
+                  style={{
+                    cursor: "pointer",
+                    boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
+                    transition: "scale 0.3s ease",
+                  }}
                   ref={(node) => {
                     if (node && tooltip?.id === i) {
                       refs.setReference(node);
@@ -414,8 +509,12 @@ const AreaChart: React.FC<AreaChartProps> = ({
                   onMouseEnter={(e) => {
                     refs.setReference(e.currentTarget);
                     setTooltip({ dataPoint: d, id: i });
+                    setHoveredDot(i);
                   }}
-                  onMouseLeave={() => setTooltip({ dataPoint: null, id: null })}
+                  onMouseLeave={() => {
+                    setTooltip({ dataPoint: null, id: null });
+                    setHoveredDot(null);
+                  }}
                 />
               ))}
             </g>

@@ -62,19 +62,22 @@ export const OpenBtnWrapper = styled.div`
 `;
 
 export const OpenButton = styled.button`
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
   border: none;
   background-color: #34c5f1ff;
   color: white;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   z-index: 5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   &:hover {
     background-color: #28a0d4ff;
     transform: scale(1.05);
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 `;
 
