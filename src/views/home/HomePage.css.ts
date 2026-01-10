@@ -1,60 +1,5 @@
 import styled from "styled-components";
 
-export const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-`;
-
-export const FormWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  display: absolute;
-  margin: auto;
-  z-index: 2;
-  padding: 1.5rem 50px;
-`;
-
-export const InputWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 1rem;
-  gap: 0.5rem;
-`;
-
-export const InputLabel = styled.label`
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  color: var(--text-color);
-`;
-
-export const FormInput = styled.input`
-  padding: 0.5rem;
-  border-radius: 5px;
-  border: 1px solid var(--input-border);
-  background-color: var(--input-bg);
-  color: var(--text-color);
-  font-size: 1rem;
-  &:focus {
-    outline: none;
-    border-color: #34c5f1ff;
-  }
-`;
-
-export const SubmitButton = styled.button`
-  background-color: #34c5f1ff;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 700;
-`;
-
 export const OpenBtnWrapper = styled.div`
   padding: 0 0.5rem;
   display: flex;
@@ -80,7 +25,8 @@ export const OpenButton = styled.button`
   cursor: pointer;
   z-index: 5;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease,
+    box-shadow 0.3s ease;
   &:hover {
     background-color: #28a0d4ff;
     transform: scale(1.05);

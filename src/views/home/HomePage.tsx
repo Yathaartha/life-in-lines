@@ -1,17 +1,9 @@
 import { useState } from "react";
+
+import { EventForm } from "../../components/event-form/EventForm";
 import LifeLine from "../../components/lifeline/LifeLine";
 import { Modal } from "../../components/modal/Modal";
-import {
-  Form,
-  FormInput,
-  FormWrapper,
-  HomePageBackground,
-  InputLabel,
-  InputWrapper,
-  OpenBtnWrapper,
-  OpenButton,
-  SubmitButton,
-} from "./HomePage.css";
+import { HomePageBackground, OpenBtnWrapper, OpenButton } from "./HomePage.css";
 
 export type LifeEvent = {
   // id: string;
@@ -24,15 +16,14 @@ const lifeEvents: LifeEvent[] = [];
 
 export const HomePage = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [eventTitle, setEventTitle] = useState("");
-  const [eventType, setEventType] = useState("positive");
-  const [eventValue, setEventValue] = useState(0);
-  const [eventDate, setEventDate] = useState<Date>(new Date());
+
+  const handleSubmit = (event: LifeEvent) => {
+    lifeEvents.push(event);
+    setIsOpen(false);
+  };
 
   return (
-    <HomePageBackground
-      bgColor={`${eventType === "positive" ? "#00c936" : "#ff0000"}`}
-      bgOpacity={eventValue / 100}>
+    <HomePageBackground>
       <OpenBtnWrapper>
         <OpenButton onClick={() => setIsOpen(true)}>
           Add a Life Event
@@ -59,6 +50,10 @@ export const HomePage = () => {
           { x: new Date("2025-07-16"), y: -8.5, name: "Terrible Day" },
           { x: new Date("2025-07-17"), y: -1.0, name: "Okay Day" },
           { x: new Date("2025-07-18"), y: 9.5, name: "Awesome Day" },
+          { x: new Date("2025-07-19"), y: 10.0, name: "Great Day" },
+          { x: new Date("2025-07-20"), y: 10.0, name: "Great Day" },
+          { x: new Date("2025-07-21"), y: 0.0, name: "Great Day" },
+          // add 100 life events with different dates and values and names
         ]}
         width={"100dvw"}
         height={"100%"}
@@ -67,80 +62,7 @@ export const HomePage = () => {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title="New Life Event">
-        <FormWrapper>
-          <Form
-            onSubmit={(e) => {
-              e.preventDefault();
-              lifeEvents.push({
-                // format date to match YYYY-MM-DD
-                x: eventDate,
-                // id: eventTitle,
-                y: eventValue * (eventType === "positive" ? 1 : -1),
-                name: eventTitle,
-              });
-              setEventTitle("");
-              setEventType("positive");
-              setEventValue(0);
-              setIsOpen(false);
-            }}>
-            <InputWrapper>
-              <InputLabel htmlFor="eventTitle">Event Title:</InputLabel>
-              <FormInput
-                id="eventTitle"
-                type="text"
-                value={eventTitle}
-                onChange={(e) => setEventTitle(e.target.value)}
-              />
-            </InputWrapper>
-
-            <InputWrapper>
-              <InputLabel htmlFor="eventDate">Event Date:</InputLabel>
-              <FormInput
-                type="date"
-                required
-                id="eventDate"
-                value={eventDate.toISOString().split("T")[0]}
-                onChange={(e) => {
-                  const date = new Date(e.target.value);
-                  setEventDate(date);
-                }}
-              />
-            </InputWrapper>
-
-            <InputWrapper>
-              <InputLabel htmlFor="positive">Positive</InputLabel>
-              <FormInput
-                type="radio"
-                required
-                id="positive"
-                value={eventType}
-                onChange={() => setEventType("positive")}
-                checked={eventType === "positive"}
-              />
-            </InputWrapper>
-
-            <InputWrapper>
-              <InputLabel htmlFor="negative">Negative</InputLabel>
-              <FormInput
-                type="radio"
-                required
-                id="negative"
-                value={eventType}
-                onChange={() => setEventType("negative")}
-                checked={eventType === "negative"}
-              />
-              <FormInput
-                type="number"
-                required
-                max={100}
-                value={eventValue}
-                onChange={(e) => setEventValue(Number(e.target.value))}
-              />
-            </InputWrapper>
-
-            <SubmitButton type="submit">Submit</SubmitButton>
-          </Form>
-        </FormWrapper>
+        <EventForm onSubmit={handleSubmit} />
       </Modal>
     </HomePageBackground>
   );

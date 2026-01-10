@@ -181,7 +181,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
   const zoomContainerRef = useRef<SVGGElement>(null);
   const [zoomState, setZoomState] = useState<ZoomState>({ k: 1, x: 0 });
 
-  const margin = { top: 20, right: 30, bottom: 2, left: 30 };
+  const margin = { top: 20, right: 30, bottom: 20, left: 30 };
   const innerHeight =
     typeof height === "number"
       ? height - margin.top - margin.bottom
@@ -197,11 +197,13 @@ const AreaChart: React.FC<AreaChartProps> = ({
 
   // Normalize dates to midnight (start of day) for proper alignment
   const normalizedData = useMemo(() => {
-    return data.map((d) => {
-      const date = new Date(d.x);
-      date.setHours(0, 0, 0, 0); // Set to midnight
-      return { ...d, x: date };
-    });
+    return data
+      .map((d) => {
+        const date = new Date(d.x);
+        date.setHours(0, 0, 0, 0); // Set to midnight
+        return { ...d, x: date };
+      })
+      .sort((a, b) => a.x.getDate() - b.x.getDate());
   }, [data]);
 
   // Get the original date extent for zoom calculations
@@ -266,6 +268,8 @@ const AreaChart: React.FC<AreaChartProps> = ({
       }
     }
 
+    const oneHourInMs = 1 * 60 * 60 * 1000;
+
     // Final safety check
     visibleStart = Math.max(
       minTime,
@@ -273,7 +277,10 @@ const AreaChart: React.FC<AreaChartProps> = ({
     );
     visibleEnd = Math.max(minTime + oneDayInMs, Math.min(visibleEnd, maxTime));
 
-    scale.domain([new Date(visibleStart), new Date(visibleEnd)]);
+    scale.domain([
+      new Date(visibleStart - oneHourInMs),
+      new Date(visibleEnd + oneHourInMs),
+    ]);
     return scale;
   }, [xScaleBase, zoomState.k, zoomState.x, innerWidth, maxZoom, oneDayInMs]);
 
@@ -281,7 +288,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
     () =>
       d3
         .scaleLinear()
-        .domain([-10, 10]) // Fixed domain as requested
+        .domain([-11, 11]) // Fixed domain as requested
         .range([innerHeight, 0]),
     [innerHeight]
   );
