@@ -18,6 +18,36 @@ export const FormWrapper = styled.div`
   padding: 1.5rem 50px;
 `;
 
+export const InputWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+`;
+
+export const InputLabel = styled.label`
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+`;
+
+export const FormInput = styled.input`
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #cccccc;
+  font-size: 1rem;
+`;
+
+export const SubmitButton = styled.button`
+  background-color: #34c5f1ff;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+`;
+
 export const OpenBtnWrapper = styled.div`
   padding: 0 0.5rem;
   display: flex;

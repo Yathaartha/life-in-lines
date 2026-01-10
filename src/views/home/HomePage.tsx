@@ -1,8 +1,17 @@
 import { useState } from "react";
-
 import LifeLine from "../../components/lifeline/LifeLine";
 import { Modal } from "../../components/modal/Modal";
-import { Form, FormWrapper, HomePageBackground, OpenBtnWrapper, OpenButton } from "./HomePage.css";
+import {
+  Form,
+  FormInput,
+  FormWrapper,
+  HomePageBackground,
+  InputLabel,
+  InputWrapper,
+  OpenBtnWrapper,
+  OpenButton,
+  SubmitButton,
+} from "./HomePage.css";
 
 export type LifeEvent = {
   // id: string;
@@ -32,17 +41,32 @@ export const HomePage = () => {
 
       <LifeLine
         data={[
-          { x: new Date("2025-02-25"), y: 25 },
-          { x: new Date("2025-04-21"), y: 60 },
-          { x: new Date("2025-06-22"), y: -40 },
-          { x: new Date("2025-07-23"), y: -85 },
-          { x: new Date("2025-07-24"), y: -10 },
-          { x: new Date("2025-07-25"), y: 95 },
+          {
+            x: new Date("2025-07-12"),
+            y: 2.5,
+            name: "Meh",
+            description:
+              "Did nothing in particular. Just spent most of the day on the couch watching Stranger Things. Btw I hated the ending.",
+          },
+          {
+            x: new Date("2025-07-13"),
+            y: 6.0,
+            name: "Great Day",
+            description:
+              "Had a wonderful day at the park with friends. Played some frisbee and had a picnic. Later went out for some Ukrainian food.",
+          },
+          { x: new Date("2025-07-15"), y: -4.0, name: "Bad Day" },
+          { x: new Date("2025-07-16"), y: -8.5, name: "Terrible Day" },
+          { x: new Date("2025-07-17"), y: -1.0, name: "Okay Day" },
+          { x: new Date("2025-07-18"), y: 9.5, name: "Awesome Day" },
         ]}
         width={"100dvw"}
         height={"100%"}
       />
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="New Life Event">
         <FormWrapper>
           <Form
             onSubmit={(e) => {
@@ -59,49 +83,62 @@ export const HomePage = () => {
               setEventValue(0);
               setIsOpen(false);
             }}>
-            <input
-              type="text"
-              value={eventTitle}
-              onChange={(e) => setEventTitle(e.target.value)}
-            />
+            <InputWrapper>
+              <InputLabel htmlFor="eventTitle">Event Title:</InputLabel>
+              <FormInput
+                id="eventTitle"
+                type="text"
+                value={eventTitle}
+                onChange={(e) => setEventTitle(e.target.value)}
+              />
+            </InputWrapper>
 
-            <label htmlFor="eventDate">Event Date:</label>
-            <input
-              type="date"
-              required
-              id="eventDate"
-              value={eventDate.toISOString().split("T")[0]}
-              onChange={(e) => {
-                const date = new Date(e.target.value);
-                setEventDate(date);
-              }}
-            />
-            <label htmlFor="positive">Positive</label>
-            <input
-              type="radio"
-              required
-              id="positive"
-              value={eventType}
-              onChange={() => setEventType("positive")}
-              checked={eventType === "positive"}
-            />
-            <label htmlFor="negative">Negative</label>
-            <input
-              type="radio"
-              required
-              id="negative"
-              value={eventType}
-              onChange={() => setEventType("negative")}
-              checked={eventType === "negative"}
-            />
-            <input
-              type="number"
-              required
-              max={100}
-              value={eventValue}
-              onChange={(e) => setEventValue(Number(e.target.value))}
-            />
-            <button type="submit">Submit</button>
+            <InputWrapper>
+              <InputLabel htmlFor="eventDate">Event Date:</InputLabel>
+              <FormInput
+                type="date"
+                required
+                id="eventDate"
+                value={eventDate.toISOString().split("T")[0]}
+                onChange={(e) => {
+                  const date = new Date(e.target.value);
+                  setEventDate(date);
+                }}
+              />
+            </InputWrapper>
+
+            <InputWrapper>
+              <InputLabel htmlFor="positive">Positive</InputLabel>
+              <FormInput
+                type="radio"
+                required
+                id="positive"
+                value={eventType}
+                onChange={() => setEventType("positive")}
+                checked={eventType === "positive"}
+              />
+            </InputWrapper>
+
+            <InputWrapper>
+              <InputLabel htmlFor="negative">Negative</InputLabel>
+              <FormInput
+                type="radio"
+                required
+                id="negative"
+                value={eventType}
+                onChange={() => setEventType("negative")}
+                checked={eventType === "negative"}
+              />
+              <FormInput
+                type="number"
+                required
+                max={100}
+                value={eventValue}
+                onChange={(e) => setEventValue(Number(e.target.value))}
+              />
+            </InputWrapper>
+
+            <SubmitButton type="submit">Submit</SubmitButton>
           </Form>
         </FormWrapper>
       </Modal>

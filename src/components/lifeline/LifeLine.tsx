@@ -2,13 +2,27 @@ import * as d3 from "d3";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import {
-    autoUpdate, flip, offset, shift, useFloating, useHover, useInteractions
+  autoUpdate,
+  flip,
+  offset,
+  shift,
+  useFloating,
+  useHover,
+  useInteractions,
 } from "@floating-ui/react";
+import {
+  EventContent,
+  EventFooter,
+  EventModalHeader,
+  EventModalWrapper,
+} from "./LifeLine.css";
 
 // --- TYPE DEFINITIONS ---
 interface DataPoint {
   x: Date; // X is now a Date
   y: number;
+  name: string;
+  description?: string;
 }
 
 interface AreaChartProps {
@@ -248,7 +262,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
     () =>
       d3
         .scaleLinear()
-        .domain([-100, 100]) // Fixed domain as requested
+        .domain([-10, 10]) // Fixed domain as requested
         .range([innerHeight, 0]),
     [innerHeight]
   );
@@ -260,7 +274,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
         .line<DataPoint>()
         .x((d) => xScale(d.x))
         .y((d) => yScale(d.y))
-        .curve(d3.curveLinear),
+        .curve(d3.curveNatural),
     [xScale, yScale]
   );
   const areaGenerator = useMemo(
@@ -270,7 +284,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
         .x((d) => xScale(d.x))
         .y0(yScale(0))
         .y1((d) => yScale(d.y))
-        .curve(d3.curveLinear),
+        .curve(d3.curveNatural),
     [xScale, yScale]
   );
 
@@ -410,20 +424,30 @@ const AreaChart: React.FC<AreaChartProps> = ({
       </div>
       {/* Tooltip Element */}
       {tooltip.dataPoint && (
-        <div
+        <EventModalWrapper
           ref={refs.setFloating}
           {...getFloatingProps({})}
           style={{
             ...floatingStyles,
             zIndex: 100,
-            background: "black",
-            color: "white",
-            padding: 10,
+            background: "white",
+            // color: "white",
           }}>
-          <strong>Date:</strong> {tooltip.dataPoint.x.toDateString()}
-          <br />
-          <strong>Value:</strong> {tooltip.dataPoint.y}
-        </div>
+          <EventModalHeader>{tooltip.dataPoint.name}</EventModalHeader>
+          <EventContent>
+            <EventContent>
+              {tooltip.dataPoint.description || "N/A"}
+            </EventContent>
+            <EventFooter>
+              <div>
+                <strong>Date:</strong> {tooltip.dataPoint.x.toDateString()}
+              </div>
+              <div>
+                <strong>Value:</strong> {tooltip.dataPoint.y}
+              </div>
+            </EventFooter>
+          </EventContent>
+        </EventModalWrapper>
       )}
     </>
   );
